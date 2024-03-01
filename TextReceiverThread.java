@@ -1,5 +1,7 @@
 import java.net.*;
 import java.io.*;
+import java.nio.ByteBuffer;
+
 import CMPC3M06.AudioPlayer;
 
 public class TextReceiverThread implements Runnable{
@@ -13,6 +15,8 @@ public class TextReceiverThread implements Runnable{
 
     public void run (){
         int PORT = 55555;
+
+        int key = 15;
 
         try{
             receiving_socket = new DatagramSocket(PORT);
@@ -38,10 +42,12 @@ public class TextReceiverThread implements Runnable{
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
                 receiving_socket.receive(packet);
+                // decryption of the datablock
+                byte[] decryptedBlock = xorOperation(packet.getData(), key);
 
                 // Assuming playBlock can handle null or empty data gracefully
                 // If not, additional checks might be needed before calling playBlock
-                player.playBlock(packet.getData());
+                player.playBlock(decryptedBlock);
 
                 // Implement a proper mechanism to stop the playback and receiving process
 
@@ -55,6 +61,18 @@ public class TextReceiverThread implements Runnable{
             player.close();
         }
         receiving_socket.close();
+    }
+    private static byte[] xorOperation(byte[] block, int key) {
+        ByteBuffer buffer = ByteBuffer.wrap(block);
+        ByteBuffer resultBuffer = ByteBuffer.allocate(block.length);
+
+        for (int j = 0; j < block.length / 4; j++) {
+            int fourByte = buffer.getInt();
+            fourByte = fourByte ^ key; //XOR operation being used here
+            resultBuffer.putInt(fourByte);
+        }
+
+        return resultBuffer.array();
     }
 }
 

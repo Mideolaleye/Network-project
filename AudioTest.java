@@ -27,9 +27,11 @@ public class AudioTest {
             byte[] encryptedBlock = xorOperation(block, key);
             encryptedVoiceVector.add(encryptedBlock);
 
+
             // we are instantly decrypting the block
             byte[] decryptedBlock = xorOperation(encryptedBlock, key);
             decryptedVoiceVector.add(decryptedBlock);
+            //this was just a test to see if the encryption would work
         }
 
         recorder.close();

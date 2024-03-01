@@ -1,4 +1,5 @@
 import java.net.*;
+import java.nio.ByteBuffer;
 
 import CMPC3M06.AudioRecorder;
 
@@ -14,6 +15,7 @@ public class TextSenderThread implements Runnable{
     public void run (){
         int PORT = 55555;
         InetAddress clientIP = null;
+        int key = 15;
         try {
             clientIP = InetAddress.getByName("localhost");  // Adjust to the receiver's IP address
         } catch (UnknownHostException e) {
@@ -44,7 +46,9 @@ public class TextSenderThread implements Runnable{
             try{
                 byte[] audioBlock = recorder.getBlock();
 
-                DatagramPacket packet = new DatagramPacket(audioBlock, audioBlock.length, clientIP, PORT);
+                byte[] encryptedBlock = xorOperation(audioBlock, key);
+
+                DatagramPacket packet = new DatagramPacket(encryptedBlock, encryptedBlock.length, clientIP, PORT);
                 sending_socket.send(packet);
 
                 // Implement a proper mechanism to stop the recording and sending process
@@ -59,4 +63,17 @@ public class TextSenderThread implements Runnable{
         }
         sending_socket.close();
     }
+    private static byte[] xorOperation(byte[] block, int key) {
+        ByteBuffer buffer = ByteBuffer.wrap(block);
+        ByteBuffer resultBuffer = ByteBuffer.allocate(block.length);
+
+        for (int j = 0; j < block.length / 4; j++) {
+            int fourByte = buffer.getInt();
+            fourByte = fourByte ^ key; //XOR operation being used here
+            resultBuffer.putInt(fourByte);
+        }
+
+        return resultBuffer.array();
+    }
 }
+
