@@ -16,7 +16,7 @@ public class TextReceiverThread implements Runnable{
     public void run (){
         int PORT = 55555;
 
-        int key = 15;
+        int key = 30;
 
         try{
             receiving_socket = new DatagramSocket(PORT);
